@@ -1,0 +1,97 @@
+// 
+
+public class Customer {
+      private int id;
+      private int speed;
+ 
+      public Customer(int id, int speed){
+           this.id=id;
+           this.speed=speed;
+      }
+}
+ 
+//This code will be running on server side (cloud)
+public class FleetSpeedManger{
+     
+ 
+      public void currentSpeedReported(int customerId, float currentSpeed){
+           float maxSpeed = getMaxAllowedSpeed();
+           if(currentSpeed > maxSpeed ){
+                 //send notification to driver using FCM or AWS
+           sendOverSpeedNotification(getDeviceToken(customerId), "Please slow down your car speed. You are allowed to run max at "+maxSpeed);
+           }
+      }
+ 
+ 
+      private float getMaxAllowedSpeed(int customerId){
+           int allowedSpeed = 100; // fetch speed from DB which is set by fleet company or by admin
+           return allowedSpeed;
+      }
+     
+ 
+      private String getDeviceToken(int customerId){
+           // it return the device token of Cutomer. Token will be sent to server while customer is registered. this token is used to send push notification using FCM or AWS
+           return "kjdshfjkdhfdsu2387673"
+      }
+ 
+}
+ 
+ 
+public class DeviceSpeedReceiver{
+ 
+      private FleetSpeedManger fleetManager;
+     
+      public DeviceSpeedReceiver(){
+           fleetManager = new FleetSpeedManger();
+      }
+ 
+      //This methid will be invoked in response of REST API and this will send data to FleetSpeedManger
+      public void reportSpeedToCompany(int customerId, float speed){
+            fleetManager.currentSpeedReported(customerId, speed);
+     
+      }
+ 
+}
+ 
+public class AdminPannnel{
+ 
+      public void setSpeedForCustomer(int customerID, float speed){
+           //this method will save data for customer in DB table
+      }
+ 
+}
+ 
+ 
+//This code will be running on driver device or on Car HU
+public class DeviceSpeedHelper{
+ 
+      private LocationManager locationManager;
+      private WeakReference<Context> contextRef;
+ 
+      public DeviceSpeedHelper(Context context){
+       contextRef = new WeakReference<Context>(context)
+      //TODO Make sure Location permission is granted to app. we can check runtime
+      locationManager = contextRef.get().getSystemService(Context.LOCATION_SERVICE);
+locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, locationListner);
+      }
+ 
+      privarte LocationListener locationListner = new LocationListener {
+           @Override
+           public void onLocationChanged(Location location){
+          
+                 float speed = location.getSpeed();
+                 float speedKmH = speed * 3.6f;
+                 reportSpeedToCompany(speedKmH);
+           }    
+ 
+      }
+ 
+ 
+      private void reportSpeedToCompany(float speed){
+           //using rest API send the current speed to Company.
+           // This method will send currentSpeed and customerId to Company via REST API
+          
+      }
+ 
+}
+ 
